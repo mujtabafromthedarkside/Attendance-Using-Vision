@@ -6,8 +6,10 @@ import os
 import re
 from PIL import Image
 from deepface import DeepFace
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/upload": {"origins": "http://localhost:5173"}})
 db_parent_folder = os.path.join("..", "..")
 original_folder = os.getcwd()
 
@@ -72,6 +74,7 @@ def upload_image():
                 "message": "success",
                 "labels": list(labels),
                 "image": image_base64,
+                "extension": extension.lower(),
             }
         )
     except Exception as e:
@@ -112,7 +115,7 @@ def label_faces(image):
             personName = "Unknown"
         else:
             personName = re.split(r"[\\.]", dfs[0]["identity"][0])[1]
-        peopleFound.add(personName)
+            peopleFound.add(personName)
 
         """ Uncomment this block to display each face 1-by-1 and its closest match"""
         # personImage = cv2.putText(
