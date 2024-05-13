@@ -73,8 +73,8 @@ function UploadImage(props) {
             <div className="text-white text-2xl my-10">
                 Upload an Image of the Classroom Here
             </div>
-            <div className="mx-10">
-                <form className="text-white flex flex-col" onSubmit={handleSubmit}>
+            <div className="mx-10 flex flex-col justify-start">
+                <form className="text-white flex flex-col self-center" onSubmit={handleSubmit}>
                     <div className="">
                         <input className=" cursor-pointer" type="file" name="image" onChange={handleFileChange} />
                     </div>
