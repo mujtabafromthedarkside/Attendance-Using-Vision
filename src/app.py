@@ -1,6 +1,7 @@
 import base64
 import io
 from flask import Flask, request, jsonify, send_file
+from retinaface import RetinaFace
 import cv2
 import os
 import re
@@ -84,23 +85,19 @@ def upload_image():
 def label_faces(image):
     tmpImage = image.copy()
 
-    # Convert the image to grayscale (face detection works on grayscale images)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    peopleFound = set()
+    faces = RetinaFace.detect_faces(image)
 
-    # Load the pre-trained face detection classifier
-    face_cascade = cv2.CascadeClassifier(
-        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-    )
-
-    # Detect faces in the image
-    faces = face_cascade.detectMultiScale(
-        gray, scaleFactor=1.1, minNeighbors=5, minSize=(20, 20)
-    )
+    thickness = round(2 / 1500 * image.shape[0])
+    fontscale = 0.9 / 2000 * image.shape[0]
 
     # Draw rectangles around the detected faces
-    # print("faces:", faces)
-    peopleFound = set()
-    for x, y, w, h in faces:
+    for face in faces.values():
+        x1, y1, x2, y2 = face["facial_area"]
+        x = x1
+        y = y1
+        w = x2 - x1
+        h = y2 - y1
         personImage = image[y : y + h, x : x + w].copy()
         dfs = DeepFace.find(
             img_path=personImage,
@@ -135,7 +132,7 @@ def label_faces(image):
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
-        cv2.rectangle(tmpImage, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.rectangle(tmpImage, (x, y), (x + w, y + h), (0, 255, 0), thickness)
 
         # Display the face number
         cv2.putText(
@@ -143,9 +140,9 @@ def label_faces(image):
             f"{personName}",
             (x, y - 10),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.9,
+            fontscale,
             (0, 255, 0),
-            2,
+            thickness,
         )
     return (tmpImage, peopleFound)
 
